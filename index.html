@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Crisma do Nicollas e do Mauricio</title>
+  <title>Crisma do Nicollas e do Mauricio - Desafio</title>
   <style>
     * {
       box-sizing: border-box;
@@ -15,7 +15,7 @@
     }
 
     body {
-      background: #0f172a;
+      background: #0b0f19;
       color: #f8fafc;
       overflow: hidden;
       touch-action: none;
@@ -33,9 +33,9 @@
       max-width: 480px;
       height: 100%;
       max-height: 850px;
-      background: linear-gradient(180deg, #1e1b4b 0%, #0f172a 100%);
-      border: 3px solid #f59e0b;
-      box-shadow: 0 0 30px rgba(245, 158, 11, 0.3);
+      background: linear-gradient(180deg, #18103c 0%, #0b0f19 100%);
+      border: 3px solid #d97706;
+      box-shadow: 0 0 35px rgba(217, 119, 6, 0.4);
       overflow: hidden;
       display: flex;
       flex-direction: column;
@@ -43,8 +43,8 @@
 
     /* Top Bar */
     header {
-      background: rgba(15, 23, 42, 0.85);
-      border-bottom: 2px solid #f59e0b;
+      background: rgba(11, 15, 25, 0.9);
+      border-bottom: 2px solid #d97706;
       padding: 10px 15px;
       text-align: center;
       z-index: 10;
@@ -52,15 +52,15 @@
     }
 
     h1 {
-      font-size: 1.1rem;
-      color: #fbbf24;
+      font-size: 1.05rem;
+      color: #f59e0b;
       text-transform: uppercase;
       letter-spacing: 1px;
-      text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+      text-shadow: 0 0 12px rgba(245, 158, 11, 0.6);
     }
 
     .sub-header {
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       color: #94a3b8;
       margin-top: 2px;
     }
@@ -69,13 +69,13 @@
       display: flex;
       justify-content: space-between;
       margin-top: 8px;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       font-weight: bold;
       color: #e2e8f0;
     }
 
     .stat-badge {
-      background: rgba(30, 41, 59, 0.8);
+      background: rgba(30, 41, 59, 0.85);
       padding: 4px 10px;
       border-radius: 12px;
       border: 1px solid #475569;
@@ -89,14 +89,14 @@
       display: block;
     }
 
-    /* Overlay Modal (Perguntas e Finais) */
+    /* Overlay Modal */
     .overlay {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(15, 23, 42, 0.95);
+      background: rgba(11, 15, 25, 0.95);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -121,12 +121,12 @@
       width: 100%;
       max-width: 400px;
       text-align: center;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
     }
 
     .card-tag {
       display: inline-block;
-      background: #3b82f6;
+      background: #2563eb;
       color: #fff;
       font-size: 0.75rem;
       font-weight: bold;
@@ -137,7 +137,7 @@
     }
 
     .card-title {
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       color: #f8fafc;
       margin-bottom: 15px;
       line-height: 1.4;
@@ -157,7 +157,7 @@
       border: 1px solid #475569;
       padding: 12px 15px;
       border-radius: 10px;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       text-align: left;
       cursor: pointer;
       transition: all 0.2s ease;
@@ -208,7 +208,7 @@
   <div id="game-container">
     <header>
       <h1>CRISMA DO NICOLLAS E DO MAURICIO</h1>
-      <div class="sub-header">Jornada de Fé e Sabedoria</div>
+      <div class="sub-header">Desafio de Fé e Destreza</div>
       <div class="stats-bar">
         <div class="stat-badge" id="pergunta-num">Pergunta: 1/30</div>
         <div class="stat-badge" id="pontos-val">Pontos: 0</div>
@@ -222,12 +222,12 @@
     <div class="overlay active" id="start-overlay">
       <div class="card">
         <div style="font-size: 2.5rem; margin-bottom: 10px;">🕊️</div>
-        <h2 style="color: #fbbf24; margin-bottom: 10px;">Bem-vindos!</h2>
-        <p style="font-size: 0.9rem; color: #cbd5e1; margin-bottom: 20px; line-height: 1.4;">
-          Destrua os obstáculos com calma e responda corretamente às 30 perguntas bíblicas. <br><br>
-          <strong>Atenção:</strong> Se errar qualquer pergunta, o jogo termina!
+        <h2 style="color: #fbbf24; margin-bottom: 10px;">Modo Desafio</h2>
+        <p style="font-size: 0.88rem; color: #cbd5e1; margin-bottom: 20px; line-height: 1.4;">
+          Destrua os obstáculos que descem mais rápido e responda corretamente às 30 perguntas.<br><br>
+          ⚡ <strong>Atenção:</strong> Se a pedra tocar no chão ou se você errar uma pergunta, é <strong>Game Over</strong>!
         </p>
-        <button class="btn-main" onclick="startGame()">INICIAR JORNADA</button>
+        <button class="btn-main" onclick="startGame()">INICIAR DESAFIO</button>
       </div>
     </div>
 
@@ -257,9 +257,9 @@
     <div class="overlay" id="victory-overlay">
       <div class="card">
         <div style="font-size: 3rem; margin-bottom: 10px;">👑</div>
-        <h2 style="color: #fbbf24; margin-bottom: 10px;">PARABÉNS!</h2>
+        <h2 style="color: #fbbf24; margin-bottom: 10px;">VICTÓRIA CELESTIAL!</h2>
         <p style="font-size: 0.95rem; color: #e2e8f0; margin-bottom: 15px; line-height: 1.4;">
-          Você concluiu com perfeição todas as 30 perguntas da Crisma do Nicollas e do Mauricio!
+          Parabéns! Você superou o desafio e respondeu perfeitamente às 30 perguntas da Crisma do Nicollas e do Mauricio!
         </p>
         <button class="btn-main" onclick="restartGame()">JOGAR NOVAMENTE</button>
       </div>
@@ -305,7 +305,6 @@
       { ref: "Colossenses 3, 12-17", q: "Qual é a regra de ouro do versículo 17?", opts: ["Faça tudo para ficar famoso", "Tudo o que fizerdes, fazei em nome do Senhor Jesus", "Busque primeiro o dinheiro", "Evite sacrifícios"], ans: 1 }
     ];
 
-    // Game Elements
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
@@ -314,7 +313,6 @@
     let isPlaying = false;
     let targetRock = null;
 
-    // Player Object
     const player = {
       x: 0,
       y: 0,
@@ -337,14 +335,12 @@
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
-    // Player Touch/Mouse Control
     function movePlayer(e) {
       if (!isPlaying || targetRock) return;
       const rect = canvas.getBoundingClientRect();
       const clientX = e.touches ? e.touches[0].clientX : e.clientX;
       player.x = clientX - rect.left;
       
-      // Clamp
       if (player.x < player.width / 2) player.x = player.width / 2;
       if (player.x > canvas.width - player.width / 2) player.x = canvas.width - player.width / 2;
     }
@@ -358,14 +354,17 @@
         return;
       }
 
-      // Slow, peaceful descent
+      // Velocidade e Vida aumentam ligeiramente a cada nível
+      const speedMultiplier = 0.65 + (currentQ * 0.035);
+      const hpBase = 20 + Math.floor(currentQ * 2.2);
+
       rock = {
-        x: canvas.width / 2,
-        y: 80,
+        x: Math.random() * (canvas.width - 80) + 40,
+        y: 60,
         radius: 35,
-        hp: 15 + Math.floor(currentQ * 1.5),
-        maxHp: 15 + Math.floor(currentQ * 1.5),
-        speedY: 0.35, // Very calm descent
+        hp: hpBase,
+        maxHp: hpBase,
+        speedY: speedMultiplier,
         qIndex: currentQ
       };
     }
@@ -393,14 +392,14 @@
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Auto Fire at calm rate
-      if (timestamp - lastShot > 180 && !targetRock) {
-        bullets.push({ x: player.x, y: player.y - 20, speed: 7 });
+      // Ritmo de tiros do canhão
+      if (timestamp - lastShot > 140 && !targetRock) {
+        bullets.push({ x: player.x, y: player.y - 20, speed: 8 });
         lastShot = timestamp;
       }
 
-      // Draw Bullets
-      ctx.fillStyle = '#60a5fa';
+      // Tiros
+      ctx.fillStyle = '#f59e0b';
       for (let i = bullets.length - 1; i >= 0; i--) {
         let b = bullets[i];
         b.y -= b.speed;
@@ -408,7 +407,6 @@
         ctx.arc(b.x, b.y, 4, 0, Math.PI * 2);
         ctx.fill();
 
-        // Bullet Collision with Rock
         if (rock) {
           let dist = Math.hypot(b.x - rock.x, b.y - rock.y);
           if (dist < rock.radius + 4) {
@@ -418,50 +416,44 @@
             bullets.splice(i, 1);
 
             if (rock.hp <= 0) {
-              // Destroyed -> Open Question
               triggerQuestion();
               break;
             }
           }
         }
 
-        // Out of screen
         if (b.y < 0) bullets.splice(i, 1);
       }
 
-      // Draw Rock
+      // Pedra
       if (rock) {
         rock.y += rock.speedY;
 
-        ctx.fillStyle = '#7c3aed';
-        ctx.strokeStyle = '#fbbf24';
+        ctx.fillStyle = '#6d28d9';
+        ctx.strokeStyle = '#f59e0b';
         ctx.lineWidth = 3;
         ctx.beginPath();
         ctx.arc(rock.x, rock.y, rock.radius, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
 
-        // Text inside Rock
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 16px sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(rock.hp, rock.x, rock.y);
 
-        // Rock hit ground -> Game Over
         if (rock.y + rock.radius >= player.y) {
-          gameOver("O obstáculo atingiu o chão! Mantenha a atenção.");
+          gameOver("O obstáculo atingiu o chão! Seja mais rápido nos disparos.");
           return;
         }
       }
 
-      // Draw Player (Cruz/Canhão Espiritual)
+      // Canhão
       ctx.fillStyle = player.color;
       ctx.beginPath();
-      // Cannon Base
       ctx.arc(player.x, player.y, 20, 0, Math.PI * 2);
       ctx.fill();
-      // Cannon Nozzle
       ctx.fillRect(player.x - 4, player.y - 25, 8, 15);
 
       requestAnimationFrame(gameLoop);
@@ -498,7 +490,7 @@
 
       if (selectedIdx === qData.ans) {
         feedback.className = 'feedback-text correct';
-        feedback.innerText = '✨ Resposta Correta! Que a fé ilumine seu caminho.';
+        feedback.innerText = '✨ Resposta Correta!';
         
         setTimeout(() => {
           document.getElementById('question-overlay').classList.remove('active');
@@ -514,14 +506,14 @@
             spawnRock();
             requestAnimationFrame(gameLoop);
           }
-        }, 1200);
+        }, 1000);
       } else {
         feedback.className = 'feedback-text wrong';
         feedback.innerText = `❌ Incorreto! A resposta certa era: "${qData.opts[qData.ans]}".`;
         
         setTimeout(() => {
           document.getElementById('question-overlay').classList.remove('active');
-          gameOver(`Você errou a Pergunta ${currentQ + 1}. Foco e oração na próxima!`);
+          gameOver(`Você errou a Pergunta ${currentQ + 1}. Tente novamente!`);
         }, 2200);
       }
     }

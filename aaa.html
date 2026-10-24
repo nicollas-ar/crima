@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0">
+    <title>CRISMA DO NICOLLAS E DO MAURICIO - Ball Blast Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        * {
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            touch-action: manipulation;
+        }
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #0c0814;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            max-width: 500px;
+            margin: 0 auto;
+            background: radial-gradient(circle at center, #1e1333 0%, #08040f 100%);
+            box-shadow: 0 0 50px rgba(234, 179, 8, 0.2);
+            overflow: hidden;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+        }
+        .gold-glow {
+            text-shadow: 0 0 10px rgba(250, 204, 21, 0.8), 0 0 20px rgba(234, 179, 8, 0.5);
+        }
+        .gold-btn {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%);
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+            transition: all 0.2s ease;
+        }
+        .gold-btn:active {
+            transform: scale(0.96);
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.6);
+        }
+        .glass-panel {
+            background: rgba(20, 14, 38, 0.92);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+        .quiz-option {
+            background: rgba(30, 24, 54, 0.8);
+            border: 1px solid rgba(245, 158, 11, 0.25);
+            transition: all 0.2s ease;
+        }
+        .quiz-option:active {
+            background: rgba(245, 158, 11, 0.2);
+            border-color: #f59e0b;
+        }
+        .stained-glass-bg {
+            background-image: radial-gradient(rgba(245, 158, 11, 0.15) 1px, transparent 0);
+            background-size: 24px 24px;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center">
+
+    <div id="game-container" class="relative">
+        <!-- Canvas do Jogo -->
+        <canvas id="gameCanvas"></canvas>
+
+        <!-- Cabecalho / Header Fixo -->
+        <div class="absolute top-0 left-0 w-full p-3 glass-panel border-b border-amber-500/30 z-10 text-center">
+            <div class="text-[10px] font-bold tracking-widest text-amber-400 uppercase flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-dove text-amber-300"></i>
+                <span>SANTA CRISMA 2026</span>
+                <i class="fa-solid fa-dove text-amber-300"></i>
+            </div>
+            <h1 class="text-sm font-black text-amber-100 gold-glow tracking-wider uppercase mt-0.5">
+                CRISMA DO NICOLLAS E DO MAURICIO
+            </h1>
+        </div>
+
+        <!-- HUD Secundario (Progresso das Perguntas + Pontos) -->
+        <div id="hud" class="absolute top-16 left-0 w-full px-4 py-2 flex justify-between items-center pointer-events-none z-10">
+            <div class="flex flex-col">
+                <span class="text-[10px] font-bold uppercase text-amber-300/80">Fé & Conhecimento</span>
+                <span id="scoreText" class="text-xl font-extrabold text-amber-200">0</span>
+            </div>
+
+            <div class="flex flex-col items-center">
+                <div class="bg-amber-950/80 border border-amber-500/40 rounded-full px-3 py-0.5 text-[11px] font-bold text-amber-300">
+                    PERGUNTA <span id="questionNumText" class="text-yellow-400 font-extrabold">1</span> DE 30
+                </div>
+                <!-- Barra de Progresso das 30 Perguntas -->
+                <div class="w-32 h-2 bg-gray-950 rounded-full mt-1 overflow-hidden border border-amber-500/30">
+                    <div id="progressBar" class="h-full bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-300 w-0 transition-all duration-300"></div>
+                </div>
+            </div>
+
+            <div class="flex flex-col items-end">
+                <span class="text-[10px] font-bold uppercase text-amber-300/80">Recorde</span>
+                <span id="highScoreText" class="text-base font-bold text-yellow-400">0</span>
+            </div>
+        </div>
+
+        <!-- Indicador de Power-up Ativo -->
+        <div id="powerupContainer" class="absolute top-28 left-4 flex flex-col gap-1.5 pointer-events-none z-10"></div>
+
+        <!-- Tela Inicial / Start -->
+        <div id="startScreen" class="absolute inset-0 z-30 flex flex-col items-center justify-between p-6 glass-panel text-center stained-glass-bg">
+            <div class="mt-12 flex flex-col items-center">
+                <div class="w-20 h-20 mb-3 rounded-full bg-gradient-to-tr from-amber-600 via-yellow-500 to-amber-300 flex items-center justify-center shadow-lg shadow-amber-500/40 border-2 border-yellow-200">
+                    <i class="fa-solid fa-cross text-4xl text-amber-950"></i>
+                </div>
+                <div class="text-xs font-bold text-amber-400 uppercase tracking-widest mb-1 flex items-center gap-2">
+                    <i class="fa-solid fa-dove"></i> Sacramento da Crisma <i class="fa-solid fa-dove"></i>
+                </div>
+                <h2 class="text-2xl font-black text-amber-100 gold-glow uppercase tracking-wider leading-tight">
+                    CRISMA DO NICOLLAS E DO MAURICIO
+                </h2>
+                <p class="text-xs text-amber-200/90 mt-2 px-4 leading-relaxed font-medium">
+                    Destrua os obstáculos da jornada, fortaleça os Dons do Espírito Santo e responda às 30 perguntas bíblicas!
+                </p>
+            </div>
+
+            <div class="w-full max-w-xs space-y-3 my-auto">
+                <div class="p-3.5 rounded-2xl bg-amber-950/40 border border-amber-500/30 text-xs text-amber-200 space-y-2 text-left">
+                    <div class="flex items-center gap-2.5">
+                        <i class="fa-solid fa-hand-pointer text-amber-400 text-base"></i>
+                        <span>Arraste para mover o Relicário</span>
+                    </div>
+                    <div class="flex items-center gap-2.5">
+                        <i class="fa-solid fa-sun text-yellow-300 text-base"></i>
+                        <span>Dispare Raios de Luz Divina</span>
+                    </div>
+                    <div class="flex items-center gap-2.5">
+                        <i class="fa-solid fa-book-bible text-amber-300 text-base"></i>
+                        <span>Destrua as pedras para liberar o Quiz Crisma!</span>
+                    </div>
+                </div>
+
+                <button id="startBtn" class="w-full py-3.5 rounded-2xl text-amber-950 font-black text-lg uppercase tracking-wider gold-btn flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-play"></i> INICIAR JORNADA
+                </button>
+            </div>
+
+            <div class="text-[11px] text-amber-400/80 font-semibold">
+                "Enviai o vosso Espírito Santo e renovai a face da terra"
+            </div>
+        </div>
+
+        <!-- Overlay do Quiz (Disparado após destruir o meteoro) -->
+        <div id="quizOverlay" class="absolute inset-0 z-40 hidden flex-col justify-end p-4 glass-panel stained-glass-bg">
+            <div class="my-auto w-full max-w-sm mx-auto flex flex-col gap-3">
+                
+                <!-- Badge do Capítulo -->
+                <div class="flex justify-between items-center">
+                    <span id="quizCapBadge" class="bg-amber-500/20 border border-amber-400/40 text-amber-300 font-extrabold text-[11px] px-3 py-1 rounded-full uppercase">
+                        MATEUS 16
+                    </span>
+                    <span class="text-amber-400/80 text-xs font-bold">
+                        <i class="fa-solid fa-book-open mr-1"></i> Desafio da Fé
+                    </span>
+                </div>
+
+                <!-- Pergunta Card -->
+                <div class="bg-purple-950/80 border border-amber-500/40 rounded-2xl p-4 shadow-xl">
+                    <h3 id="quizQuestionText" class="text-sm font-bold text-amber-100 leading-snug">
+                        Pergunta aqui...
+                    </h3>
+                </div>
+
+                <!-- Opções de Resposta -->
+                <div id="quizOptionsContainer" class="flex flex-col gap-2">
+                    <!-- Gerado via JS -->
+                </div>
+
+                <!-- Painel de Feedback e Explicação -->
+                <div id="quizFeedback" class="hidden p-3.5 rounded-xl border flex-col gap-1.5 text-xs text-left">
+                    <div id="quizFeedbackStatus" class="font-extrabold uppercase flex items-center gap-2"></div>
+                    <p id="quizExplanation" class="text-amber-100/90 leading-relaxed font-medium"></p>
+                    <button id="nextQuestionBtn" class="mt-2 w-full py-2.5 rounded-xl text-amber-950 font-black uppercase tracking-wider gold-btn text-xs flex items-center justify-center gap-1.5">
+                        <span>CONTINUAR</span> <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tela de Game Over (Tentativa novamente no mesmo nivel) -->
+        <div id="gameOverScreen" class="absolute inset-0 z-30 hidden flex-col items-center justify-center p-6 glass-panel text-center">
+            <div class="w-16 h-16 mb-3 rounded-full bg-red-500/20 border-2 border-red-500/80 flex items-center justify-center">
+                <i class="fa-solid fa-shield-halved text-3xl text-red-400"></i>
+            </div>
+            
+            <h2 class="text-2xl font-black text-red-400 tracking-wider mb-1">RENOVE SUAS FORÇAS!</h2>
+            <p class="text-xs text-amber-200/80 mb-5">O obstáculo atingiu o seu relicário.</p>
+
+            <div class="w-full max-w-xs bg-amber-950/40 border border-amber-500/30 rounded-2xl p-4 mb-5 space-y-2 text-left">
+                <div class="flex justify-between items-center text-xs">
+                    <span class="text-amber-300/80">Progresso Atual</span>
+                    <span id="failProgressText" class="font-black text-amber-200">Pergunta 1 de 30</span>
+                </div>
+                <div class="flex justify-between items-center text-xs">
+                    <span class="text-amber-300/80">Pontuação da Rodada</span>
+                    <span id="finalScore" class="font-black text-yellow-400">0</span>
+                </div>
+            </div>
+
+            <button id="restartBtn" class="w-full max-w-xs py-3.5 rounded-2xl text-amber-950 font-black text-base uppercase tracking-wider gold-btn flex items-center justify-center gap-2">
+                <i class="fa-solid fa-rotate-right"></i> CONTINUAR TENTANDO
+            </button>
+        </div>
+
+        <!-- Tela de Vitória (30 Perguntas Concluídas) -->
+        <div id="victoryScreen" class="absolute inset-0 z-50 hidden flex-col items-center justify-between p-6 glass-panel text-center stained-glass-bg overflow-y-auto">
+            <div class="my-auto flex flex-col items-center w-full max-w-xs">
+                <div class="w-24 h-24 mb-4 rounded-full bg-gradient-to-tr from-yellow-400 via-amber-300 to-yellow-100 flex items-center justify-center shadow-2xl shadow-yellow-400/60 border-4 border-white animate-bounce">
+                    <i class="fa-solid fa-dove text-5xl text-amber-700"></i>
+                </div>
+
+                <div class="text-xs font-black text-amber-400 uppercase tracking-widest mb-1">
+                    FORMAÇÃO CONCLUÍDA
+                </div>
+
+                <h2 class="text-2xl font-black text-amber-100 gold-glow uppercase tracking-wide leading-tight mb-2">
+                    PARABÉNS!<br>CRISMA DO NICOLLAS E DO MAURICIO
+                </h2>
+
+                <p class="text-xs text-amber-200/90 leading-relaxed mb-6 font-medium">
+                    Vocês responderam com sabedoria a todas as 30 perguntas da Bíblia Sagrada e estão prontos para receber a plenitude do Espírito Santo!
+                </p>
+
+                <div class="w-full bg-amber-950/60 border border-amber-400/50 rounded-2xl p-4 mb-6 space-y-3">
+                    <div class="flex justify-between items-center text-xs border-b border-amber-800/40 pb-2">
+                        <span class="text-amber-300">Pontuação de Fé</span>
+                        <span id="victoryScore" class="text-xl font-black text-yellow-300">0</span>
+                    </div>
+                    <div class="flex justify-between items-center text-xs">
+                        <span class="text-amber-300">Desafios Concluídos</span>
+                        <span class="text-sm font-bold text-amber-200">30 / 30 Perguntas</span>
+                    </div>
+                </div>
+
+                <button id="victoryRestartBtn" class="w-full py-4 rounded-2xl text-amber-950 font-black text-base uppercase tracking-wider gold-btn flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-dove"></i> JOGAR NOVAMENTE
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- BASE DE DADOS: 30 PERGUNTAS CRISMA ---
+        const quizQuestions = [
+            // Mateus 16 (1 - 10)
+            {
+                cap: "Mateus 16",
+                q: "1. Em qual região Jesus estava quando fez a pergunta aos discípulos sobre a Sua identidade?",
+                options: ["Cesaria de Filipe", "Nazaré", "Cafarnaum", "Jerusalém"],
+                correct: 0,
+                exp: "Jesus levou os discípulos para a região de Cesaria de Filipe para fazer a grande revelação sobre Sua identidade."
+            },
+            {
+                cap: "Mateus 16",
+                q: "2. Segundo a opinião pública, quem as pessoas achavam que Jesus era?",
+                options: ["Moisés ou Abraão", "João Batista, Elias, Jeremias ou um dos profetas", "Um rei guerreiro romano", "Apenas um rabino local"],
+                correct: 1,
+                exp: "O povo o confundia com grandes profetas do passado que haviam retornado."
+            },
+            {
+                cap: "Mateus 16",
+                q: "3. Qual foi a pergunta direta que Jesus fez aos Seus discípulos?",
+                options: ["'Vocês querem me abandonar?'", "'E vós, quem dizeis que eu sou?'", "'Quem é o maior no Reino dos Céus?'", "'Por que tendes medo?'"],
+                correct: 1,
+                exp: "Jesus quis saber o testemunho pessoal de fé de Seus discípulos mais próximos."
+            },
+            {
+                cap: "Mateus 16",
+                q: "4. Quem respondeu em nome de todos os discípulos à pergunta de Jesus?",
+                options: ["João", "Tiago", "Simão Pedro", "André"],
+                correct: 2,
+                exp: "Simão Pedro tomou a palavra como líder e porta-voz dos apóstolos."
+            },
+            {
+                cap: "Mateus 16",
+                q: "5. Qual foi a resposta exata dada por Pedro a Jesus?",
+                options: ["'Tu és o Profeta do Altíssimo'", "'Tu és o Mestre da Galileia'", "'Tu és o Cristo, o Filho do Deus vivo'", "'Tu és o Rei dos Judeus'"],
+                correct: 2,
+                exp: "Pedro professou com clareza a divindade e a missão messiânica de Jesus."
+            },
+            {
+                cap: "Mateus 16",
+                q: "6. De acordo com Jesus, de onde veio a revelação que Pedro recebeu?",
+                options: ["Dos livros de Moisés", "De sua própria inteligência", "Do Pai que está nos céus", "Dos anciãos da comunidade"],
+                correct: 2,
+                exp: "Jesus afirmou que a carne e o sangue não revelaram isso a Pedro, mas sim o Pai celeste."
+            },
+            {
+                cap: "Mateus 16",
+                q: "7. Qual o significado do novo nome que Jesus deu a Simão (Pedro)?",
+                options: ["Pedra / Rocha", "Luz do Mundo", "Leão da Tribo de Judá", "Pastor dos Homens"],
+                correct: 0,
+                exp: "Pedro significa rocha/pedra, indicando a firmeza na qual a Igreja seria fundamentada."
+            },
+            {
+                cap: "Mateus 16",
+                q: "8. Sobre o que Jesus disse que edificaria a Sua Igreja?",
+                options: ["Sobre o Templo de Jerusalém", "Sobre a rocha da fé professada por Pedro", "Sobre a Lei Antiga", "Sobre as riquezas do mundo"],
+                correct: 1,
+                exp: "Jesus edifica Sua Igreja sobre a pedra da fé e autoridade confiada a Pedro."
+            },
+            {
+                cap: "Mateus 16",
+                q: "9. O que Jesus prometeu que 'não prevalecerá' contra a Sua Igreja?",
+                options: ["Os impérios da Terra", "As portas do inferno (poder da morte)", "As perseguições dos homens", "As falsas doutrinas"],
+                correct: 1,
+                exp: "Jesus garantiu a vitória eterna da Igreja sobre o mal e as forças da morte."
+            },
+            {
+                cap: "Mateus 16",
+                q: "10. O que as 'chaves do Reino dos Céus', entregues a Pedro, simbolizam?",
+                options: ["A chave de um templo físico", "A autoridade para ligar e desligar na Terra e nos Céus", "A riqueza do Reino", "O segredo do fim dos tempos"],
+                correct: 1,
+                exp: "As chaves simbolizam a autoridade espiritual dada por Cristo aos apóstolos e ao Papa."
+            },
+            // Lucas 13 (11 - 20)
+            {
+                cap: "Lucas 13",
+                q: "11. Qual tragédia envolvendo os galileus é mencionada no início de Lucas 13?",
+                options: ["Um terremoto na Galileia", "Pilatos misturou o sangue dos galileus com os sacrifícios", "Uma grande seca", "Uma praga no campo"],
+                correct: 1,
+                exp: "Foi o massacre promovido por Pilatos enquanto os galileus realizavam sacrifícios no Templo."
+            },
+            {
+                cap: "Lucas 13",
+                q: "12. Qual era a mentalidade errada daquela época sobre as pessoas que sofriam tragédias?",
+                options: ["Achavam que era azar", "Achavam que eram os mais pecadores e punidos por Deus", "Achavam que eram santos", "Achavam que era um teste dos anjos"],
+                correct: 1,
+                exp: "Acreditava-se erroneamente que tragédias eram castigos diretos por pecados específicos."
+            },
+            {
+                cap: "Lucas 13",
+                q: "13. O que Jesus disse em Lucas 13 que acontecerá se não houver conversão?",
+                options: ["Seremos esquecidos", "Todos perecerão da mesma forma", "Ficaremos doentes", "Perderemos os bens materiais"],
+                correct: 1,
+                exp: "Jesus adverte: 'Se não vos converterdes, ireis todos perecer do mesmo modo'."
+            },
+            {
+                cap: "Lucas 13",
+                q: "14. Qual outro acidente famoso em Jerusalém Jesus menciona?",
+                options: ["A queda da torre de Siloé sobre 18 pessoas", "O desabamento da ponte do Cedron", "O incêndio do palácio de Herodes", "A inundação do tanque de Betesda"],
+                correct: 0,
+                exp: "A torre de Siloé desabou matando dezoito pessoas, servindo de alerta para a conversão."
+            },
+            {
+                cap: "Lucas 13",
+                q: "15. O que acidentes e tragédias ensinam sobre a urgência da nossa conversão?",
+                options: ["Que a vida é frágil e devemos nos converter hoje", "Que não vale a pena planejar o futuro", "Que devemos ter medo de caminhar na rua", "Que os pecadores sempre morrem jovens"],
+                correct: 0,
+                exp: "Mostram que a vida humana é incerta e que não devemos adiar a reconciliação com Deus."
+            },
+            {
+                cap: "Lucas 13",
+                q: "16. Na parábola de Lucas 13, qual planta representa a nossa vida?",
+                options: ["Uma Oliveira", "Uma Figueira", "Uma Videira", "Um Pinheiro"],
+                correct: 1,
+                exp: "A figueira plantada na vinha representa cada um de nós chamado a dar bons frutos."
+            },
+            {
+                cap: "Lucas 13",
+                q: "17. Há quanto tempo o dono da vinha procurava frutos na figueira?",
+                options: ["Há 1 ano", "Há 3 anos", "Há 7 anos", "Há 10 anos"],
+                correct: 1,
+                exp: "O dono vinha há 3 anos procurando frutos e não encontrava nenhum."
+            },
+            {
+                cap: "Lucas 13",
+                q: "18. Qual era a ordem inicial do dono da vinha para a figueira?",
+                options: ["'Regue-a mais'", "'Corte-a, para que não ocupe inutilmente a terra'", "'Venda a figueira'", "'Mude-a de lugar'"],
+                correct: 1,
+                exp: "O dono queria cortá-la por não estar dando os frutos esperados."
+            },
+            {
+                cap: "Lucas 13",
+                q: "19. Quem intercede pela figueira pedindo mais um ano?",
+                options: ["O agricultor / vinhateiro", "Um vizinho da vinha", "Os servos do dono", "Os discípulos"],
+                correct: 0,
+                exp: "O vinhateiro (que representa Jesus) intercede com misericórdia para dar uma nova chance."
+            },
+            {
+                cap: "Lucas 13",
+                q: "20. O que o vinhateiro propõe fazer para tentar salvar a figueira?",
+                options: ["Pintar suas folhas", "Cavar ao redor dela e adubá-la", "Regar apenas com água benta", "Trocar a terra do vaso"],
+                correct: 1,
+                exp: "Ele promete dedicar mais cuidado, cavando e adubando para que ela produza frutos."
+            },
+            // Colossenses 3 (21 - 30)
+            {
+                cap: "Colossenses 3",
+                q: "21. Como São Paulo chama os cristãos no início de Colossenses 3?",
+                options: ["Ressuscitados com Cristo e Escolhidos de Deus", "Guerreiros da Lei", "Anjos terrestres", "Povo do deserto"],
+                correct: 0,
+                exp: "São Paulo lembra que fomos ressuscitados com Cristo no Batismo para uma vida nova."
+            },
+            {
+                cap: "Colossenses 3",
+                q: "22. Qual metáfora São Paulo usa em Colossenses 3 para falar sobre mudar de atitude?",
+                options: ["Mudar de casa", "Despir-se do homem velho e vestir-se das vestes novas", "Construir uma ponte", "Navegar em alto mar"],
+                correct: 1,
+                exp: "A metáfora do vestuário: trocar as roupagens velhas do pecado pelas virtudes cristãs."
+            },
+            {
+                cap: "Colossenses 3",
+                q: "23. Cite 3 virtudes que compõem as 'vestes' do cristão (Colossenses 3):",
+                options: ["Misericórdia, bondade e humildade", "Orgulho, coragem e fama", "Riqueza, sabedoria humana e poder", "Apressamento, rigor e força"],
+                correct: 0,
+                exp: "São Paulo exorta a nos vestirmos de compaixão, bondade, humildade, mansidão e paciência."
+            },
+            {
+                cap: "Colossenses 3",
+                q: "24. O que o crismado deve fazer em relação aos defeitos e ofensas dos outros?",
+                options: ["Guardar rancor", "Perdoar mutuamente como o Senhor nos perdoou", "Cobrar justiça divina imediata", "Afastar-se de todos"],
+                correct: 1,
+                exp: "O perdoar-se mutuamente é reflexo do perdão que recebemos gratuitamente de Cristo."
+            },
+            {
+                cap: "Colossenses 3",
+                q: "25. Qual é a virtude principal ('o vínculo da perfeição')?",
+                options: ["A Fé", "A Esperança", "O Amor / Caridade", "A Prudência"],
+                correct: 2,
+                exp: "Acima de tudo está o amor (caridade), que une perfeitamente todas as outras virtudes."
+            },
+            {
+                cap: "Colossenses 3",
+                q: "26. O que deve 'reinar' nos corações dos cristãos (Colossenses 3, 15)?",
+                options: ["A paz de Cristo", "O desejo de vitória", "O medo do julgamento", "A busca por honra"],
+                correct: 0,
+                exp: "'Seja a paz de Cristo o árbitro em vossos corações, à qual fostes chamados num só corpo'."
+            },
+            {
+                cap: "Colossenses 3",
+                q: "27. Que atitude em relação a Deus devemos cultivar sempre?",
+                options: ["A Gratidão (sede agradecidos)", "A cobrança de bênçãos", "A indiferença", "A curiosidade"],
+                correct: 0,
+                exp: "São Paulo insiste repetidamente: 'E sede agradecidos!'."
+            },
+            {
+                cap: "Colossenses 3",
+                q: "28. Como a Palavra de Cristo deve habitar dentro de nós?",
+                options: ["De forma superficial", "Abundantemente em toda a sabedoria", "Apenas aos domingos", "Somente na memória"],
+                correct: 1,
+                exp: "'Habite em vós a palavra de Cristo abundantemente, em toda a sabedoria'."
+            },
+            {
+                cap: "Colossenses 3",
+                q: "29. De que maneira devemos louvar e cantar a Deus em nossas vidas?",
+                options: ["Com salmos, hinos e cantos espirituais, de coração grato", "Apenas em silêncio absoluto", "Somente com instrumentos de ouro", "Apenas quando estivermos sem problemas"],
+                correct: 0,
+                exp: "Louvamos a Deus com salmos e cantos espirituais, expressando a gratidão do coração."
+            },
+            {
+                cap: "Colossenses 3",
+                q: "30. Qual é a 'regra de ouro' de Colossenses 3, 17 que resume tudo o que fazemos?",
+                options: ["'Tudo o que fizerdes, fazei-o em nome do Senhor Jesus, dando graças a Deus Pai'", "'Buscai em primeiro lugar o poder humano'", "'Fazei o bem somente a quem vos faz o bem'", "'Evitai qualquer tipo de sacrifício'"],
+                correct: 0,
+                exp: "Colossenses 3,17: 'Tudo quanto fizerdes, por palavras ou por obras, fazei-o em nome do Senhor Jesus'."
+            }
+        ];
+
+        // --- VARIÁVEIS DE CONFIGURAÇÃO DO JOGO ---
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const container = document.getElementById('game-container');
+
+        // UI Elements
+        const startScreen = document.getElementById('startScreen');
+        const gameOverScreen = document.getElementById('gameOverScreen');
+        const victoryScreen = document.getElementById('victoryScreen');
+        const quizOverlay = document.getElementById('quizOverlay');
+
+        const startBtn = document.getElementById('startBtn');
+        const restartBtn = document.getElementById('restartBtn');
+        const victoryRestartBtn = document.getElementById('victoryRestartBtn');
+        const nextQuestionBtn = document.getElementById('nextQuestionBtn');
+
+        const scoreText = document.getElementById('scoreText');
+        const highScoreText = document.getElementById('highScoreText');
+        const questionNumText = document.getElementById('questionNumText');
+        const progressBar = document.getElementById('progressBar');
+        const failProgressText = document.getElementById('failProgressText');
+        const finalScore = document.getElementById('finalScore');
+        const victoryScore = document.getElementById('victoryScore');
+
+        const quizCapBadge = document.getElementById('quizCapBadge');
+        const quizQuestionText = document.getElementById('quizQuestionText');
+        const quizOptionsContainer = document.getElementById('quizOptionsContainer');
+        const quizFeedback = document.getElementById('quizFeedback');
+        const quizFeedbackStatus = document.getElementById('quizFeedbackStatus');
+        const quizExplanation = document.getElementById('quizExplanation');
+        const powerupContainer = document.getElementById('powerupContainer');
+
+        // Estado do Jogo
+        let width, height;
+        let isPlaying = false;
+        let currentQuestionIndex = 0; // 0 a 29
+        let score = 0;
+        let highScore = localStorage.getItem('crisma_highScore') || 0;
+
+        // Entidades
+        let cannon;
+        let bullets = [];
+        let currentRock = null;
+        let particles = [];
+        let powerups = [];
+        let activePowerups = { doubleShot: 0, fastFire: 0 };
+
+        // Ajuste de Resolução
+        function resizeCanvas() {
+            width = container.clientWidth;
+            height = container.clientHeight;
+            canvas.width = width;
+            canvas.height = height;
+
+            if (cannon) {
+                cannon.y = height - 45;
+                cannon.clampPosition();
+            }
+        }
+        window.addEventListener('resize', resizeCanvas);
+
+        // --- CANHÃO / RELICÁRIO ---
+        class ReliquaryCannon {
+            constructor() {
+                this.width = 46;
+                this.height = 54;
+                this.x = width / 2;
+                this.y = height - 45;
+                this.targetX = width / 2;
+                this.lastShotTime = 0;
+                this.baseFireRate = 110;
+            }
+
+            update(dt) {
+                this.x += (this.targetX - this.x) * 0.35;
+                this.clampPosition();
+
+                const now = Date.now();
+                const rate = activePowerups.fastFire > 0 ? this.baseFireRate / 2 : this.baseFireRate;
+
+                if (isPlaying && !quizOverlay.classList.contains('flex') && now - this.lastShotTime >= rate) {
+                    this.shoot();
+                    this.lastShotTime = now;
+                }
+            }
+
+            clampPosition() {
+                const half = this.width / 2;
+                if (this.x - half < 12) this.x = half + 12;
+                if (this.x + half > width - 12) this.x = width - half - 12;
+            }
+
+            shoot() {
+                if (activePowerups.doubleShot > 0) {
+                    bullets.push(new LightRay(this.x - 14, this.y - 28));
+                    bullets.push(new LightRay(this.x + 14, this.y - 28));
+                } else {
+                    bullets.push(new LightRay(this.x, this.y - 28));
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+
+                // Base do Relicário/Canhão Sagrado
+                ctx.fillStyle = '#78350f';
+                ctx.beginPath();
+                ctx.roundRect(-22, 10, 44, 12, 6);
+                ctx.fill();
+
+                // Corpo em Ouro
+                const grad = ctx.createLinearGradient(-15, -28, 15, 10);
+                grad.addColorStop(0, '#fef08a');
+                grad.addColorStop(0.5, '#f59e0b');
+                grad.addColorStop(1, '#b45309');
+
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.roundRect(-14, -28, 28, 38, [8, 8, 3, 3]);
+                ctx.fill();
+
+                // Detalhe da Cruz no centro do Canhão
+                ctx.fillStyle = '#ffffff';
+                ctx.shadowColor = '#fef08a';
+                ctx.shadowBlur = 10;
+
+                // Cruz
+                ctx.fillRect(-2, -18, 4, 16);
+                ctx.fillRect(-7, -13, 14, 4);
+
+                ctx.restore();
+            }
+        }
+
+        // --- PROJÉTEIS (RAIOS DE LUZ DIVINA) ---
+        class LightRay {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.radius = 4;
+                this.speed = 13;
+                this.markedForDeletion = false;
+            }
+
+            update() {
+                this.y -= this.speed;
+                if (this.y < -10) this.markedForDeletion = true;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.shadowColor = '#fde047';
+                ctx.shadowBlur = 12;
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Rastro Dourado
+                ctx.fillStyle = 'rgba(250, 204, 21, 0.4)';
+                ctx.fillRect(this.x - 2, this.y, 4, 14);
+                ctx.restore();
+            }
+        }
+
+        // --- PEDRA / OBSTÁCULO DA ETAPA ---
+        class HolyObstacle {
+            constructor(qIndex) {
+                this.qIndex = qIndex;
+                this.radius = Math.min(width * 0.16, 42);
+                this.x = width / 2;
+                this.y = 80;
+
+                // Vida proporcional ao numero da pergunta
+                this.hp = 18 + qIndex * 7;
+                this.maxHp = this.hp;
+
+                // Física de Quique Leve
+                this.vx = (Math.random() > 0.5 ? 1 : -1) * 1.6;
+                this.vy = -1.5;
+                this.gravity = 0.22;
+                this.bounceForce = -Math.sqrt(2 * this.gravity * (height * 0.45));
+            }
+
+            update() {
+                this.vy += this.gravity;
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // Paredes
+                if (this.x - this.radius <= 10) {
+                    this.x = this.radius + 10;
+                    this.vx *= -1;
+                } else if (this.x + this.radius >= width - 10) {
+                    this.x = width - this.radius - 10;
+                    this.vx *= -1;
+                }
+
+                // Chão
+                const floorY = height - 30;
+                if (this.y + this.radius >= floorY) {
+                    this.y = floorY - this.radius;
+                    this.vy = this.bounceForce;
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+
+                ctx.shadowColor = '#f59e0b';
+                ctx.shadowBlur = 20;
+
+                // Gradiente Dourado / Púrpura
+                const grad = ctx.createRadialGradient(-this.radius * 0.3, -this.radius * 0.3, 2, 0, 0, this.radius);
+                grad.addColorStop(0, '#fef08a');
+                grad.addColorStop(0.5, '#d97706');
+                grad.addColorStop(1, '#4c1d95');
+
+                ctx.fillStyle = grad;
+                ctx.strokeStyle = '#fef08a';
+                ctx.lineWidth = 2.5;
+
+                ctx.beginPath();
+                ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                // Vida / HP
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = '#ffffff';
+                ctx.font = `900 ${Math.max(14, this.radius * 0.65)}px sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(this.hp, 0, 1);
+
+                ctx.restore();
+            }
+        }
+
+        // --- POWER-UPS (DONS/BENÇÃOS) ---
+        class Powerup {
+            constructor(x, y, type) {
+                this.x = x;
+                this.y = y;
+                this.type = type; // 'doubleShot', 'fastFire'
+                this.radius = 13;
+                this.vy = 2;
+                this.markedForDeletion = false;
+            }
+
+            update() {
+                this.y += this.vy;
+                if (this.y > height + 20) this.markedForDeletion = true;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+
+                const isDouble = this.type === 'doubleShot';
+                const color = isDouble ? '#ec4899' : '#f59e0b';
+                const icon = isDouble ? '2x' : '⚡';
+
+                ctx.shadowColor = color;
+                ctx.shadowBlur = 12;
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 11px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(icon, 0, 0);
+
+                ctx.restore();
+            }
+        }
+
+        // --- PARTÍCULAS / ESPÍRITO SANTO ---
+        class SparkleParticle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                this.radius = Math.random() * 3 + 1.5;
+                this.vx = (Math.random() - 0.5) * 7;
+                this.vy = (Math.random() - 0.5) * 7;
+                this.alpha = 1;
+                this.decay = Math.random() * 0.03 + 0.02;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.alpha -= this.decay;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, this.alpha);
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        function createSparkles(x, y, color = '#fef08a', count = 12) {
+            for (let i = 0; i < count; i++) {
+                particles.push(new SparkleParticle(x, y, color));
+            }
+        }
+
+        // --- LÓGICA DE CONTROLES ---
+        function handleMove(clientX) {
+            if (!isPlaying || !cannon) return;
+            const rect = canvas.getBoundingClientRect();
+            cannon.targetX = clientX - rect.left;
+        }
+
+        window.addEventListener('mousemove', (e) => handleMove(e.clientX));
+        window.addEventListener('touchmove', (e) => {
+            if (e.touches.length > 0) handleMove(e.touches[0].clientX);
+        }, { passive: true });
+        window.addEventListener('touchstart', (e) => {
+            if (e.touches.length > 0) handleMove(e.touches[0].clientX);
+        }, { passive: true });
+
+        // Teclado
+        window.addEventListener('keydown', (e) => {
+            if (!cannon) return;
+            if (e.key === 'ArrowLeft') cannon.targetX -= 25;
+            if (e.key === 'ArrowRight') cannon.targetX += 25;
+        });
+
+        // --- GERENCIAMENTO DE QUIZ ---
+        function openQuizOverlay() {
+            const data = quizQuestions[currentQuestionIndex];
+
+            quizCapBadge.textContent = data.cap;
+            quizQuestionText.textContent = data.q;
+            quizFeedback.classList.add('hidden');
+            quizFeedback.classList.remove('flex');
+
+            quizOptionsContainer.innerHTML = '';
+            data.options.forEach((optText, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'quiz-option w-full p-3 rounded-xl text-left text-xs text-amber-100 font-medium flex items-center justify-between gap-2';
+                btn.innerHTML = `
+                    <span>${optText}</span>
+                    <i class="fa-regular fa-circle text-amber-400/50"></i>
+                `;
+                btn.onclick = () => selectOption(index, data);
+                quizOptionsContainer.appendChild(btn);
+            });
+
+            quizOverlay.classList.remove('hidden');
+            quizOverlay.classList.add('flex');
+        }
+
+        function selectOption(selectedIndex, data) {
+            const optionsBtns = quizOptionsContainer.querySelectorAll('button');
+            optionsBtns.forEach(btn => btn.disabled = true);
+
+            const isCorrect = selectedIndex === data.correct;
+
+            // Feedback Visual das Opções
+            optionsBtns.forEach((btn, idx) => {
+                if (idx === data.correct) {
+                    btn.className = 'w-full p-3 rounded-xl text-left text-xs font-bold bg-emerald-600/40 border-2 border-emerald-400 text-emerald-100 flex items-center justify-between';
+                    btn.querySelector('i').className = 'fa-solid fa-circle-check text-emerald-300';
+                } else if (idx === selectedIndex && !isCorrect) {
+                    btn.className = 'w-full p-3 rounded-xl text-left text-xs font-bold bg-red-600/40 border-2 border-red-400 text-red-100 flex items-center justify-between';
+                    btn.querySelector('i').className = 'fa-solid fa-circle-xmark text-red-300';
+                }
+            });
+
+            // Feedback Box
+            quizFeedback.classList.remove('hidden');
+            quizFeedback.classList.add('flex');
+
+            if (isCorrect) {
+                quizFeedback.className = 'p-3.5 rounded-xl border border-emerald-500/40 bg-emerald-950/60 text-xs text-left flex flex-col gap-1.5';
+                quizFeedbackStatus.innerHTML = `<i class="fa-solid fa-dove text-emerald-400"></i> <span class="text-emerald-300">Resposta Correta!</span>`;
+                score += 100;
+            } else {
+                quizFeedback.className = 'p-3.5 rounded-xl border border-amber-500/40 bg-amber-950/60 text-xs text-left flex flex-col gap-1.5';
+                quizFeedbackStatus.innerHTML = `<i class="fa-solid fa-lightbulb text-amber-400"></i> <span class="text-amber-300">Aprenda com a Palavra:</span>`;
+                score += 20;
+            }
+
+            scoreText.textContent = score;
+            quizExplanation.textContent = data.exp;
+        }
+
+        nextQuestionBtn.onclick = () => {
+            quizOverlay.classList.add('hidden');
+            quizOverlay.classList.remove('flex');
+
+            currentQuestionIndex++;
+            updateProgress();
+
+            if (currentQuestionIndex >= 30) {
+                triggerVictory();
+            } else {
+                spawnNextObstacle();
+            }
+        };
+
+        function updateProgress() {
+            questionNumText.textContent = Math.min(30, currentQuestionIndex + 1);
+            const pct = (currentQuestionIndex / 30) * 100;
+            progressBar.style.width = `${pct}%`;
+        }
+
+        function spawnNextObstacle() {
+            if (currentQuestionIndex < 30) {
+                currentRock = new HolyObstacle(currentQuestionIndex);
+            }
+        }
+
+        // --- POWER-UPS ---
+        function applyPowerup(type) {
+            activePowerups[type] = 7000;
+            renderPowerupBadges();
+        }
+
+        function updatePowerups(dt) {
+            for (let p in activePowerups) {
+                if (activePowerups[p] > 0) {
+                    activePowerups[p] -= dt;
+                    if (activePowerups[p] <= 0) activePowerups[p] = 0;
+                }
+            }
+        }
+
+        function renderPowerupBadges() {
+            powerupContainer.innerHTML = '';
+            if (activePowerups.doubleShot > 0) {
+                const b = document.createElement('div');
+                b.className = 'bg-pink-600/90 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full shadow-md animate-pulse';
+                b.textContent = 'Raio Duplo';
+                powerupContainer.appendChild(b);
+            }
+            if (activePowerups.fastFire > 0) {
+                const b = document.createElement('div');
+                b.className = 'bg-amber-500/90 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full shadow-md animate-pulse';
+                b.textContent = 'Super Velocidade';
+                powerupContainer.appendChild(b);
+            }
+        }
+
+        // --- LOOP PRINCIPAL DO JOGO ---
+        let lastTime = performance.now();
+
+        function gameLoop(currentTime) {
+            const dt = currentTime - lastTime;
+            lastTime = currentTime;
+
+            ctx.clearRect(0, 0, width, height);
+
+            if (isPlaying && !quizOverlay.classList.contains('flex')) {
+                updatePowerups(dt);
+
+                // 1. Canhão
+                cannon.update(dt);
+                cannon.draw();
+
+                // 2. Tiros
+                for (let i = bullets.length - 1; i >= 0; i--) {
+                    const b = bullets[i];
+                    b.update();
+                    b.draw();
+                    if (b.markedForDeletion) bullets.splice(i, 1);
+                }
+
+                // 3. Powerups
+                for (let i = powerups.length - 1; i >= 0; i--) {
+                    const p = powerups[i];
+                    p.update();
+                    p.draw();
+
+                    const dist = Math.hypot(p.x - cannon.x, p.y - cannon.y);
+                    if (dist < p.radius + cannon.width / 2) {
+                        applyPowerup(p.type);
+                        powerups.splice(i, 1);
+                        continue;
+                    }
+
+                    if (p.markedForDeletion) powerups.splice(i, 1);
+                }
+
+                // 4. Obstáculo Atual
+                if (currentRock) {
+                    currentRock.update();
+                    currentRock.draw();
+
+                    // Colisão com Canhão (Game Over)
+                    const distToCannon = Math.hypot(currentRock.x - cannon.x, currentRock.y - cannon.y);
+                    if (distToCannon < currentRock.radius + 15) {
+                        triggerGameOver();
+                    }
+
+                    // Colisão com Tiros
+                    for (let j = bullets.length - 1; j >= 0; j--) {
+                        const b = bullets[j];
+                        const distToBullet = Math.hypot(currentRock.x - b.x, currentRock.y - b.y);
+
+                        if (distToBullet < currentRock.radius + b.radius) {
+                            bullets.splice(j, 1);
+                            currentRock.hp--;
+                            score += 5;
+                            scoreText.textContent = score;
+
+                            createSparkles(b.x, b.y, '#fef08a', 4);
+
+                            // Chance de drop de Powerup
+                            if (Math.random() < 0.08) {
+                                const type = Math.random() > 0.5 ? 'doubleShot' : 'fastFire';
+                                powerups.push(new Powerup(currentRock.x, currentRock.y, type));
+                            }
+
+                            // Quando a pedra é totalmente destruída -> Dispara Quiz
+                            if (currentRock.hp <= 0) {
+                                createSparkles(currentRock.x, currentRock.y, '#f59e0b', 25);
+                                currentRock = null;
+                                setTimeout(openQuizOverlay, 300);
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                // 5. Partículas
+                for (let i = particles.length - 1; i >= 0; i--) {
+                    const pt = particles[i];
+                    pt.update();
+                    pt.draw();
+                    if (pt.alpha <= 0) particles.splice(i, 1);
+                }
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // --- GAME OVER E VITÓRIA ---
+        function startGame() {
+            score = 0;
+            currentQuestionIndex = 0;
+            bullets = [];
+            particles = [];
+            powerups = [];
+            activePowerups = { doubleShot: 0, fastFire: 0 };
+
+            scoreText.textContent = score;
+            highScoreText.textContent = highScore;
+            updateProgress();
+
+            cannon = new ReliquaryCannon();
+            resizeCanvas();
+
+            startScreen.classList.add('hidden');
+            gameOverScreen.classList.add('hidden');
+            gameOverScreen.classList.remove('flex');
+            victoryScreen.classList.add('hidden');
+            victoryScreen.classList.remove('flex');
+            quizOverlay.classList.add('hidden');
+            quizOverlay.classList.remove('flex');
+
+            isPlaying = true;
+            spawnNextObstacle();
+        }
+
+        function triggerGameOver() {
+            isPlaying = false;
+            createSparkles(cannon.x, cannon.y, '#ef4444', 30);
+
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('crisma_highScore', highScore);
+            }
+
+            failProgressText.textContent = `Pergunta ${currentQuestionIndex + 1} de 30`;
+            finalScore.textContent = score;
+
+            setTimeout(() => {
+                gameOverScreen.classList.remove('hidden');
+                gameOverScreen.classList.add('flex');
+            }, 400);
+        }
+
+        function triggerVictory() {
+            isPlaying = false;
+
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('crisma_highScore', highScore);
+            }
+
+            victoryScore.textContent = score;
+
+            // Confete Dourado Especial
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 120,
+                    spread: 80,
+                    origin: { y: 0.6 },
+                    colors: ['#f59e0b', '#fef08a', '#ffffff', '#ec4899']
+                });
+            }
+
+            victoryScreen.classList.remove('hidden');
+            victoryScreen.classList.add('flex');
+        }
+
+        // Eventos dos Botões
+        startBtn.onclick = startGame;
+        restartBtn.onclick = startGame;
+        victoryRestartBtn.onclick = startGame;
+
+        // Inicialização
+        resizeCanvas();
+        highScoreText.textContent = highScore;
+        requestAnimationFrame(gameLoop);
+
+    </script>
+</body>
+</html>
